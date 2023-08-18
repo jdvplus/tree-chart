@@ -61,7 +61,7 @@ export default class TreeChartCore {
 
   init() {
     this.draw();
-    this.enableDrag();
+    // this.enableDrag();
     this.initTransform();
   }
 

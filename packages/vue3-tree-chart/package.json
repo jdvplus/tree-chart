@@ -1,7 +1,7 @@
 {
-  "name": "@ssthouse/vue3-tree-chart",
+  "name": "@overvue/vue3-tree-chart",
   "author": "ssthouse",
-  "version": "0.2.6",
+  "version": "0.6.9",
   "description": "Tree Component for Vue3 powered by D3.js & SVG",
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -11,9 +11,6 @@
     "build:component": "vue-cli-service build --target lib --name vue3-tree-chart src/vue-tree/index.js"
   },
   "main": "dist/vue3-tree-chart.umd.js",
-  "dependencies": {
-    "@ssthouse/tree-chart-core": "^1.1.0"
-  },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
@@ -47,5 +44,8 @@
   ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "@overvue/tree-chart-core": "^1.2.1"
   }
 }
