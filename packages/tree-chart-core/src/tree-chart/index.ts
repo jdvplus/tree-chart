@@ -1,15 +1,21 @@
 import * as d3 from 'd3';
-import { ANIMATION_DURATION, DEFAULT_HEIGHT_DECREMENT, DEFAULT_LEVEL_HEIGHT, DEFAULT_NODE_HEIGHT, DEFAULT_NODE_WIDTH, MATCH_SCALE_REGEX, MATCH_TRANSLATE_REGEX } from './constant';
+import {
+  ANIMATION_DURATION,
+  DEFAULT_HEIGHT_DECREMENT,
+  DEFAULT_LEVEL_HEIGHT,
+  DEFAULT_NODE_HEIGHT,
+  DEFAULT_NODE_WIDTH,
+  MATCH_SCALE_REGEX,
+  MATCH_TRANSLATE_REGEX,
+} from './constant';
 import { TreeDataset, Direction, TreeLinkStyle } from './tree-chart';
 import { deepCopy, rotatePoint } from './util';
-
 
 interface TreeConfig {
   nodeWidth: number;
   nodeHeight: number;
   levelHeight: number;
 }
-
 
 interface TreeChartCoreParams {
   treeConfig?: TreeConfig;
@@ -30,7 +36,7 @@ export default class TreeChartCore {
   };
   linkStyle: TreeLinkStyle = TreeLinkStyle.CURVE;
   direction: Direction = Direction.VERTICAL;
-  collapseEnabled: boolean = true
+  collapseEnabled: boolean = true;
 
   dataset: TreeDataset;
 
@@ -50,18 +56,19 @@ export default class TreeChartCore {
     if (params.treeConfig) {
       this.treeConfig = params.treeConfig;
     }
-    this.collapseEnabled = params.collapseEnabled
+    this.collapseEnabled = params.collapseEnabled;
     this.svgElement = params.svgElement;
     this.domElement = params.domElement;
     this.treeContainer = params.treeContainer;
     this.dataset = this.updatedInternalData(params.dataset);
     if (params.direction) this.direction = params.direction;
-    if (params.linkStyle) this.linkStyle = params.linkStyle
+    if (params.linkStyle) this.linkStyle = params.linkStyle;
   }
 
   init() {
     this.draw();
     // this.enableDrag();
+    this.enableKeyMovement();
     this.initTransform();
   }
 
@@ -72,7 +79,7 @@ export default class TreeChartCore {
   getInitialTransformStyle(): Record<string, string> {
     return {
       transform: `scale(1) translate(${this.initTransformX}px, ${this.initTransformY}px)`,
-      transformOrigin: "center",
+      transformOrigin: 'center',
     };
   }
 
@@ -105,12 +112,11 @@ export default class TreeChartCore {
   }
 
   setScale(scaleNum) {
-    if (typeof scaleNum !== "number") return;
+    if (typeof scaleNum !== 'number') return;
     let pos = this.getTranslate();
     let translateString = `translate(${pos[0]}px, ${pos[1]}px)`;
     this.svgElement.style.transform = `scale(${scaleNum}) ` + translateString;
-    this.domElement.style.transform =
-      `scale(${scaleNum}) ` + translateString;
+    this.domElement.style.transform = `scale(${scaleNum}) ` + translateString;
     this.currentScale = scaleNum;
   }
   getTranslate() {
@@ -124,13 +130,12 @@ export default class TreeChartCore {
     return [x, y];
   }
 
-
   isVertical() {
     return this.direction === Direction.VERTICAL;
   }
   /**
- * 根据link数据,生成svg path data
- */
+   * 根据link数据,生成svg path data
+   */
   private generateLinkPath(d) {
     const self = this;
     if (this.linkStyle === TreeLinkStyle.CURVE) {
@@ -198,10 +203,10 @@ export default class TreeChartCore {
   }
 
   updateDataList() {
-    let [nodeDataList, linkDataList] = this.buildTree()
+    let [nodeDataList, linkDataList] = this.buildTree();
     nodeDataList.splice(0, 1);
     linkDataList = linkDataList.filter(
-      (x) => x.source.data.name !== "__invisible_root"
+      (x) => x.source.data.name !== '__invisible_root'
     );
     this.linkDataList = linkDataList;
     this.nodeDataList = nodeDataList;
@@ -209,13 +214,13 @@ export default class TreeChartCore {
 
   private draw() {
     this.updateDataList();
-    const identifier = this.dataset["identifier"];
-    const specialLinks = this.dataset["links"];
+    const identifier = this.dataset['identifier'];
+    const specialLinks = this.dataset['links'];
     if (specialLinks && identifier) {
       for (const link of specialLinks) {
         let parent,
           children = undefined;
-        if (identifier === "value") {
+        if (identifier === 'value') {
           parent = this.nodeDataList.find((d) => {
             return d[identifier] == link.parent;
           });
@@ -224,10 +229,10 @@ export default class TreeChartCore {
           });
         } else {
           parent = this.nodeDataList.find((d) => {
-            return d["data"][identifier] == link.parent;
+            return d['data'][identifier] == link.parent;
           });
           children = this.nodeDataList.filter((d) => {
-            return d["data"][identifier] == link.child;
+            return d['data'][identifier] == link.child;
           });
         }
         if (parent && children) {
@@ -246,28 +251,28 @@ export default class TreeChartCore {
 
     const self = this;
     const links = this.svgSelection
-      .selectAll(".link")
+      .selectAll('.link')
       .data(this.linkDataList, (d) => {
         return `${d.source.data._key}-${d.target.data._key}`;
       });
 
     links
       .enter()
-      .append("path")
-      .style("opacity", 0)
+      .append('path')
+      .style('opacity', 0)
       .transition()
       .duration(ANIMATION_DURATION)
       .ease(d3.easeCubicInOut)
-      .style("opacity", 1)
-      .attr("class", "link")
-      .attr("d", function (d) {
+      .style('opacity', 1)
+      .attr('class', 'link')
+      .attr('d', function (d) {
         return self.generateLinkPath(d);
       });
     links
       .transition()
       .duration(ANIMATION_DURATION)
       .ease(d3.easeCubicInOut)
-      .attr("d", function (d) {
+      .attr('d', function (d) {
         return self.generateLinkPath(d);
       });
     links
@@ -275,15 +280,15 @@ export default class TreeChartCore {
       .transition()
       .duration(ANIMATION_DURATION / 2)
       .ease(d3.easeCubicInOut)
-      .style("opacity", 0)
+      .style('opacity', 0)
       .remove();
   }
 
   /**
- * Returns updated dataset by deep copying every nodes from the externalData and adding unique '_key' attributes.
- **/
+   * Returns updated dataset by deep copying every nodes from the externalData and adding unique '_key' attributes.
+   **/
   private updatedInternalData(externalData) {
-    var data = { name: "__invisible_root", children: [] };
+    var data = { name: '__invisible_root', children: [] };
     if (!externalData) return data;
     if (Array.isArray(externalData)) {
       for (var i = externalData.length - 1; i >= 0; i--) {
@@ -308,7 +313,7 @@ export default class TreeChartCore {
     let startY = 0;
     let isDrag = false;
     // 保存鼠标点下时的位移
-    let mouseDownTransform = "";
+    let mouseDownTransform = '';
     this.treeContainer.onmousedown = (event) => {
       mouseDownTransform = this.svgElement.style.transform;
       startX = event.clientX;
@@ -349,6 +354,83 @@ export default class TreeChartCore {
       startX = 0;
       startY = 0;
       isDrag = false;
+    };
+  }
+
+  /* [OverVue v.10.0] updated to implement key movement functionality */
+  private enableKeyMovement() {
+    this.treeContainer.setAttribute('tabindex', '0');
+
+    this.treeContainer.onkeydown = (event) => {
+      event.preventDefault();
+
+      // Position relative to tree
+      const originTransform = this.svgElement.style.transform;
+      console.log(originTransform);
+
+      let originOffsetX = 0;
+      let originOffsetY = 0;
+
+      const result = originTransform.match(MATCH_TRANSLATE_REGEX);
+      if (result !== null && result.length !== 0) {
+        const [offsetX, offsetY] = result.slice(1);
+        originOffsetX = parseInt(offsetX);
+        originOffsetY = parseInt(offsetY);
+      }
+
+      let newX = originOffsetX;
+      let newY = originOffsetY;
+
+      // Can move this outside, maybe to constant.ts
+      const SCREEN_MOVE_INCREMENT = 30;
+
+      switch (event.key) {
+        case 'ArrowUp':
+          newY =
+            originOffsetY +
+            Math.floor(SCREEN_MOVE_INCREMENT / this.currentScale);
+          break;
+        case 'ArrowDown':
+          newY =
+            originOffsetY -
+            Math.floor(SCREEN_MOVE_INCREMENT / this.currentScale);
+          break;
+        case 'ArrowLeft':
+          newX =
+            originOffsetX +
+            Math.floor(SCREEN_MOVE_INCREMENT / this.currentScale);
+          break;
+        case 'ArrowRight':
+          newX =
+            originOffsetX -
+            Math.floor(SCREEN_MOVE_INCREMENT / this.currentScale);
+          break;
+        case '.':
+          this.zoomIn();
+          return;
+        case ',':
+          this.zoomOut();
+          return;
+        case '/':
+          this.svgElement.style.transform =
+            this.getInitialTransformStyle().transform;
+          this.domElement.style.transform =
+            this.getInitialTransformStyle().transform;
+          return;
+        default:
+          return;
+      }
+
+      let transformStr = `translate(${newX}px, ${newY}px)`;
+      if (originTransform) {
+        transformStr = originTransform.replace(
+          MATCH_TRANSLATE_REGEX,
+          transformStr
+        );
+      }
+
+      this.svgElement.style.transform = transformStr;
+      this.domElement.style.transform = transformStr;
     };
   }
 
