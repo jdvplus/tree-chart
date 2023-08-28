@@ -90,8 +90,6 @@ export default class TreeChartCore {
 
   // To have access to initial transform (origin of tree) without resetting on every render of tree
   getOriginStyle(): Record<string, string> {
-    console.log('getting origin');
-    // this.initTransform();
     return {
       transform: `scale(1) translate(${this.originX}px, ${this.originY}px)`,
       transformOrigin: "center",
@@ -387,7 +385,6 @@ export default class TreeChartCore {
 
       // Position relative to tree
       const originTransform = this.svgElement.style.transform;
-      console.log(originTransform);
 
       let originOffsetX = 0;
       let originOffsetY = 0;
