@@ -49,6 +49,8 @@ export default class TreeChartCore {
   linkDataList: any[];
   initTransformX: number;
   initTransformY: number;
+  originX: number;
+  originY: number;
 
   currentScale: number = 1;
 
@@ -63,13 +65,16 @@ export default class TreeChartCore {
     this.dataset = this.updatedInternalData(params.dataset);
     if (params.direction) this.direction = params.direction;
     if (params.linkStyle) this.linkStyle = params.linkStyle;
+
+    // Set up X, Y values for origin
+    this.initOrigin();
   }
 
   init() {
     this.draw();
     // this.enableDrag();
+    // this.initTransform();
     this.enableKeyMovement();
-    this.initTransform();
   }
 
   getNodeDataList() {
@@ -81,6 +86,22 @@ export default class TreeChartCore {
       transform: `scale(1) translate(${this.initTransformX}px, ${this.initTransformY}px)`,
       transformOrigin: 'center',
     };
+  }
+
+  // To have access to initial transform (origin of tree) without resetting on every render of tree
+  getOriginStyle(): Record<string, string> {
+    console.log('getting origin');
+    // this.initTransform();
+    return {
+      transform: `scale(1) translate(${this.originX}px, ${this.originY}px)`,
+      transformOrigin: "center",
+    };
+  }
+
+  // Can be called by tree to return to origin
+  setToOrigin(): void {
+    this.svgElement.style.transform = this.getOriginStyle().transform;
+    this.domElement.style.transform = this.getOriginStyle().transform;
   }
 
   zoomIn() {
@@ -412,10 +433,7 @@ export default class TreeChartCore {
           this.zoomOut();
           return;
         case '/':
-          this.svgElement.style.transform =
-            this.getInitialTransformStyle().transform;
-          this.domElement.style.transform =
-            this.getInitialTransformStyle().transform;
+          this.setToOrigin();
           return;
         default:
           return;
@@ -447,6 +465,22 @@ export default class TreeChartCore {
         this.treeConfig.nodeWidth - DEFAULT_HEIGHT_DECREMENT
       );
       this.initTransformY = Math.floor(containerHeight / 2);
+    }
+  }
+
+  initOrigin() {
+    const containerWidth = this.domElement.offsetWidth;
+    const containerHeight = this.domElement.offsetHeight;
+    if (this.isVertical()) {
+      this.originX = Math.floor(containerWidth / 2);
+      this.originY = Math.floor(
+        this.treeConfig.nodeHeight - DEFAULT_HEIGHT_DECREMENT
+      );
+    } else {
+      this.originX = Math.floor(
+        this.treeConfig.nodeWidth - DEFAULT_HEIGHT_DECREMENT
+      );
+      this.originY = Math.floor(containerHeight / 2);
     }
   }
 
