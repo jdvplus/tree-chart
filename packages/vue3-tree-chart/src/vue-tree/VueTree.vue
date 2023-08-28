@@ -119,6 +119,9 @@ export default {
       this.initialTransformStyle =
         this.treeChartCore.getInitialTransformStyle();
     },
+    setToOrigin() {
+      this.treeChartCore.setToOrigin();
+    },
     zoomIn() {
       this.treeChartCore.zoomIn();
     },
